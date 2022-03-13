@@ -3,15 +3,12 @@
     "target": "es5",
     "module": "esnext",
     "moduleResolution": "node",
-    "strict": true,
+    //"strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "outDir": "./dist"
-  },
-  "include": [
-    "src"
-  ]
+  }
 }
