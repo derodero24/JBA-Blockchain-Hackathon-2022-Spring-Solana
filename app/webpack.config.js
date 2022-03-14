@@ -22,6 +22,11 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
       },
+      {
+        test: /\.(png|jpg|gif)$/,
+        loader: 'file-loader',
+        options: {},
+    }
     ],
   },
   devServer: {
