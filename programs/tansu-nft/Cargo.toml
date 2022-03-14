@@ -1,12 +1,12 @@
 [package]
-name = "JBA-Blockchain-Hackathon-2022-Spring-Solana"
+name = "tansu-nft"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "jba_blockchain_hackathon_2022_spring_solana"
+name = "tansu_nft"
 
 [features]
 no-entrypoint = []
@@ -16,4 +16,5 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.22.0"
+anchor-lang = "0.22.1"
+anchor-spl = "0.22.1"
