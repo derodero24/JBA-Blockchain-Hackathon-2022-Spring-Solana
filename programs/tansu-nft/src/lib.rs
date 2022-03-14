@@ -6,35 +6,38 @@ declare_id!("3nLgLxquBkVFH3AKKraAa95LG2UAv6c5dpTXAB5yvuHU");
 #[program]
 pub mod tansu_nft {
     use super::*;
-    pub fn initialize(ctx: Context<Initialize>, wrapped_tokens: Vec<Pubkey>) -> Result<()> {
+    pub fn initialize(
+        ctx: Context<Initialize>,
+        original_token: Pubkey,
+        inner_tokens: Vec<Pubkey>,
+        originals_reed_fee: f64,
+    ) -> Result<()> {
         let tansu = &mut ctx.accounts.tansu;
-        let creator = &ctx.accounts.creator;
-        tansu.creator = *creator.key;
-        tansu.wrapped_tokens = wrapped_tokens;
-
-        msg!("hello");
+        tansu.original_token = original_token;
+        tansu.inner_tokens = inner_tokens;
+        tansu.originals_reed_fee = originals_reed_fee;
         Ok(())
     }
 }
 
 #[derive(Accounts)]
-// #[instruction(bump: u8)]
 pub struct Initialize<'info> {
-    #[account(init, payer = creator, space = Tansu::LEN)]
+    #[account(init, payer = payer, space = Tansu::LEN)]
     pub tansu: Account<'info, Tansu>,
     #[account(mut)]
-    pub creator: Signer<'info>,
+    pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[account]
 pub struct Tansu {
-    pub creator: Pubkey,
-    pub wrapped_tokens: Vec<Pubkey>,
+    pub original_token: Pubkey,
+    pub inner_tokens: Vec<Pubkey>,
+    pub originals_reed_fee: f64,
 }
-const DISCRIMINATOR_LENGTH: usize = 8;
-const CREATOR_LENGTH: usize = 32;
-const WRAPPED_TOKENS_LENGTH: usize = 32 * 5;
 impl Tansu {
-    const LEN: usize = DISCRIMINATOR_LENGTH + CREATOR_LENGTH + WRAPPED_TOKENS_LENGTH;
+    const LEN: usize = 8 // discriminator
+        + 32 // original_token
+        + 32 * 5 // inner_tokens (最大5つ)
+        + 16; // fee
 }

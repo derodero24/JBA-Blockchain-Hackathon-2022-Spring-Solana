@@ -9,96 +9,124 @@ describe('tansu-nft', () => {
   anchor.setProvider(anchor.Provider.env());
   const program = anchor.workspace.TansuNft as anchor.Program<TansuNft>;
 
-  // Creator,Tansuのキーペア
-  const firstCreator = program.provider.wallet;
-  const firstTansu = anchor.web3.Keypair.generate();
+  // Creator,splToken,Tansuのキーペア
+  const creator1 = program.provider.wallet;
+  const creator2 = anchor.web3.Keypair.generate();
 
-  // it('Is initialized!', async () => {
-  //   // Tansu,creatorのキーペア
-  //   const tansuKeypair = anchor.web3.Keypair.generate();
+  const splToken1 = anchor.web3.Keypair.generate();
+  const splToken2 = anchor.web3.Keypair.generate();
 
-  //   // PDA keyの作成
-  //   const [mintPda, mintPdaBump] = await anchor.web3.PublicKey.findProgramAddress(
-  //     [Buffer.from(anchor.utils.bytes.utf8.encode('test'))],
-  //     program.programId
-  //   );
-  //   // console.log(mintPda, mintPdaBump);
-  //   // console.log(tansuKeypair.publicKey.toBase58());
+  const tansu1 = anchor.web3.Keypair.generate();
+  const tansu2 = anchor.web3.Keypair.generate();
 
-  //   // Tansu作成
-  //   await program.rpc.initialize(mintPdaBump, {
-  //     accounts: {
-  //       mint: mintPda,
-  //       tansu: tansuKeypair.publicKey,
-  //       creator: creatorPubkey,
-  //       systemProgram: anchor.web3.SystemProgram.programId,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-  //     },
-  //     signers: [tansuKeypair],
-  //   });
+  const tansuArgs = [
+    {
+      creator: creator1,
+      tansu: tansu1,
+      original_token: splToken1.publicKey,
+      inner_tokens: [],
+      originals_reed_fee: 2,
+    },
+    {
+      creator: creator2,
+      tansu: tansu2,
+      original_token: splToken2.publicKey,
+      inner_tokens: [splToken1.publicKey],
+      originals_reed_fee: 0.1,
+    },
+  ];
 
-  //   // // データチェック
-  //   // const tansuAccount = await program.account.tansu.fetch(tansuKeypair.publicKey);
-  //   // assert.equal(tansuAccount.creator.toBase58(), creatorPubkey.toBase58());
-  // });
+  it('Airdrop for test creators', async () => {
+    // airdrop
+    const signature = await program.provider.connection.requestAirdrop(
+      creator2.publicKey,
+      1000000000
+    );
+    await program.provider.connection.confirmTransaction(signature);
+  });
 
-  it('Is initialized!', async () => {
+  it('Initialize first tansu account.', async () => {
     // Tansu作成
-    const wrapped_tokens = [];
-    await program.rpc.initialize(wrapped_tokens, {
+    const args = tansuArgs[0];
+    await program.rpc.initialize(args.original_token, args.inner_tokens, args.originals_reed_fee, {
       accounts: {
-        tansu: firstTansu.publicKey,
-        creator: firstCreator.publicKey,
+        tansu: args.tansu.publicKey,
+        payer: args.creator.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       },
-      signers: [firstTansu],
+      signers: [args.tansu],
     });
 
     // データチェック
-    const tansuAccount = await program.account.tansu.fetch(firstTansu.publicKey);
-    console.log(tansuAccount);
-    assert.equal(tansuAccount.creator.toBase58(), firstCreator.publicKey.toBase58());
-    assert.equal(tansuAccount.wrappedTokens.length, wrapped_tokens.length);
+    const tansuAccount = await program.account.tansu.fetch(args.tansu.publicKey);
+    assert.equal(tansuAccount.originalToken.toBase58(), args.original_token.toBase58());
+    assert.equal(tansuAccount.innerTokens.length, args.inner_tokens.length);
+    assert.equal(tansuAccount.originalsReedFee, args.originals_reed_fee);
+  });
+
+  it('Initialize second tansu account.', async () => {
+    // Tansu作成
+    const args = tansuArgs[1];
+    await program.rpc.initialize(args.original_token, args.inner_tokens, args.originals_reed_fee, {
+      accounts: {
+        tansu: args.tansu.publicKey,
+        payer: args.creator.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [args.creator as anchor.web3.Keypair, args.tansu],
+    });
+
+    // データチェック
+    const tansuAccount = await program.account.tansu.fetch(args.tansu.publicKey);
+    assert.equal(tansuAccount.originalToken.toBase58(), args.original_token.toBase58());
+    assert.equal(tansuAccount.innerTokens.length, args.inner_tokens.length);
+    assert.equal(tansuAccount.originalsReedFee, args.originals_reed_fee);
   });
 
   it('Can fetch all tansu accounts', async () => {
     const tansuAccounts = await program.account.tansu.all();
-    assert.equal(tansuAccounts.length, 1);
+    assert.equal(tansuAccounts.length, 2);
   });
 
-  it('Can filter tansu by creator', async () => {
+  it('Can filter tansu by original_token', async () => {
     const tansuAccounts = await program.account.tansu.all([
       {
         memcmp: {
           offset: 8, // Discriminator.
-          bytes: firstCreator.publicKey.toBase58(),
+          bytes: splToken1.publicKey.toBase58(),
         },
       },
     ]);
     assert.equal(tansuAccounts.length, 1);
   });
 
-  it('create new tansu', async () => {
-    // Tansu,creatorのキーペア
-    const newCreator = program.provider.wallet;
-    const newTansu = anchor.web3.Keypair.generate();
-    const wrapped_tokens = [firstTansu.publicKey];
+  // it('create new tansu', async () => {
+  //   // Tansu,creatorのキーペア
+  //   const newCreator = program.provider.wallet;
+  //   const newTansu = anchor.web3.Keypair.generate();
+  //   const wrapped_tokens = [firstTansu.publicKey];
 
-    // Tansu作成
-    await program.rpc.initialize(wrapped_tokens, {
-      accounts: {
-        tansu: newTansu.publicKey,
-        creator: newCreator.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      },
-      signers: [newTansu],
-    });
+  //   // Tansu作成
+  //   await program.rpc.initialize(wrapped_tokens, {
+  //     accounts: {
+  //       tansu: newTansu.publicKey,
+  //       creator: newCreator.publicKey,
+  //       systemProgram: anchor.web3.SystemProgram.programId,
+  //     },
+  //     signers: [newTansu],
+  //   });
 
-    // データチェック
-    const tansuAccount = await program.account.tansu.fetch(newTansu.publicKey);
-    console.log(tansuAccount);
-    assert.equal(tansuAccount.creator.toBase58(), newCreator.publicKey.toBase58());
-    assert.equal(tansuAccount.wrappedTokens.length, wrapped_tokens.length);
-  });
+  //   // データチェック
+  //   const tansuAccount = await program.account.tansu.fetch(newTansu.publicKey);
+  //   console.log(tansuAccount);
+  //   assert.equal(tansuAccount.creator.toBase58(), newCreator.publicKey.toBase58());
+  //   assert.equal(tansuAccount.wrappedTokens.length, wrapped_tokens.length);
+
+  //   // pay
+  //   await program.rpc.pay({
+  //     accounts: {
+  //       tansu: newTansu.publicKey,
+  //     },
+  //   });
+  // });
 });
