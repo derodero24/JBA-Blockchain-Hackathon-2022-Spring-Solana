@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import { Box, Grid, Pagination } from '@mui/material';
 
+import nft1_img from '../../img/test1.png';
+import nft2_img from '../../img/test2.png';
+import nft3_img from '../../img/test3.png';
 import Slide from '../components/Slide';
-import nft1_img from '../img/test1.png';
-import nft2_img from '../img/test2.png';
-import nft3_img from '../img/test3.png';
 
 const slidesProp = [
   {},

@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import { Box, Button, Grid, Paper, Typography } from '@mui/material';
 
-import nft1_img from '../img/test1.png';
-import nft2_img from '../img/test2.png';
+import nft1_img from '../../img/test1.png';
+import nft2_img from '../../img/test2.png';
 import DetailDialog from './DetailDialog';
 
 const emails = ['username@gmail.com', 'user02@gmail.com'];

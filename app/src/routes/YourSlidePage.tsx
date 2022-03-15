@@ -1,7 +1,7 @@
 import { Box, Grid } from '@mui/material';
 
+import slide1 from '../../img/test_gif.gif';
 import YourSlideCard from '../components/YourSlideCard';
-import slide1 from '../img/test_gif.gif';
 
 export function YourSlidePage() {
   return (

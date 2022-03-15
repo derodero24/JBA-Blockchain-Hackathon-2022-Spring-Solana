@@ -1,7 +1,7 @@
 import { Box, Grid } from '@mui/material';
 
+import slide1 from '../../img/test_gif.gif';
 import SlideMarketCand from '../components/SlideMarketCand';
-import slide1 from '../img/test_gif.gif';
 
 export function SlideMarketPage(props: { network: string }) {
   return (
