@@ -2,12 +2,15 @@
 seeds = false
 [programs.localnet]
 tansu_nft = "3nLgLxquBkVFH3AKKraAa95LG2UAv6c5dpTXAB5yvuHU"
+[programs.devnet]
+tansu_nft = "3nLgLxquBkVFH3AKKraAa95LG2UAv6c5dpTXAB5yvuHU"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+# cluster = "localnet"
+cluster = "devnet"
 wallet = "/Users/shintaro/.config/solana/id.json"
 
 [scripts]
