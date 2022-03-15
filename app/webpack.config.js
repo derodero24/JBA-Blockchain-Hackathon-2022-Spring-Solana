@@ -9,7 +9,7 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
   },
   resolve: {
-    modules: [path.join(__dirname, 'src'), 'node_modules'],
+    modules: [path.join(__dirname, 'src'), path.join(__dirname, 'node_modules')],
     extensions: ['.js', '.ts', '.tsx'],
   },
   module: {
@@ -26,7 +26,7 @@ module.exports = {
         test: /\.(png|jpg|gif)$/,
         loader: 'file-loader',
         options: {},
-    }
+      },
     ],
   },
   devServer: {
