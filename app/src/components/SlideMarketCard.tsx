@@ -1,31 +1,24 @@
+import { useContext } from 'react';
+
 import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/material';
-import { Provider, Wallet } from '@project-serum/anchor';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { ConfirmOptions, Connection } from '@solana/web3.js';
 
-import { readSlide, testFunc } from '../interact';
+import { readSlide } from '../interact';
+import { SolanaContext } from './SolanaProvider';
 
-const opts = { preflightCommitment: 'processed' as ConfirmOptions };
-
-export default function SlideMarketCand(props) {
+export default function SlideMarketCard(props) {
   const wallet = useAnchorWallet();
-
-  const getProvider = async () => {
-    // プロバイダーを準備
-    const connection = new Connection(props.network, opts.preflightCommitment);
-    const provider = new Provider(connection, wallet as Wallet, opts.preflightCommitment);
-    return provider;
-  };
+  const { testFunc } = useContext(SolanaContext);
 
   const read = async () => {
     const _tmp = await readSlide();
   };
 
   const test = async () => {
-    const provider = await getProvider();
-    const _data = await testFunc(provider);
+    await testFunc();
   };
+
   if (!wallet) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '100px' }}>
@@ -63,9 +56,7 @@ export default function SlideMarketCand(props) {
                   '&:hover': { background: 'steelblue' },
                 }}
                 variant='contained'
-                onClick={() => {
-                  read();
-                }}
+                onClick={read}
                 fullWidth
               >
                 READ
@@ -82,9 +73,7 @@ export default function SlideMarketCand(props) {
             '&:hover': { background: 'steelblue' },
           }}
           variant='contained'
-          onClick={() => {
-            test();
-          }}
+          onClick={test}
           fullWidth
         >
           TEST

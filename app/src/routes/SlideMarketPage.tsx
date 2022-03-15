@@ -1,16 +1,16 @@
 import { Box, Grid } from '@mui/material';
 
 import slide1 from '../../img/test_gif.gif';
-import SlideMarketCand from '../components/SlideMarketCand';
+import SlideMarketCard from '../components/SlideMarketCard';
 
-export function SlideMarketPage(props: { network: string }) {
+export function SlideMarketPage() {
   return (
     <div>
       <Grid container alignItems='center' justifyContent='center'>
         <Box></Box>
       </Grid>
       <Box margin={5}>
-        <SlideMarketCand name={'First Slide'} img_url={slide1} id={1} network={props.network} />
+        <SlideMarketCard name={'First Slide'} img_url={slide1} id={1} />
       </Box>
     </div>
   );
