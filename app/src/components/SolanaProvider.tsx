@@ -1,40 +1,14 @@
-import { createContext, ReactNode, useState } from 'react';
+import { createContext, ReactNode } from 'react';
 
-// import { Idl, Program, Provider, Wallet } from '@project-serum/anchor';
-import {
-  AuthorityType,
-  createMint,
-  createMintToInstruction,
-  createSetAuthorityInstruction,
-  getMint,
-  getOrCreateAssociatedTokenAccount,
-  mintTo,
-  mintToInstructionData,
-} from '@solana/spl-token';
-import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
-import {
-  clusterApiUrl,
-  ConfirmOptions,
-  Connection,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  sendAndConfirmTransaction,
-  Signer,
-  SystemProgram,
-  Transaction,
-} from '@solana/web3.js';
+import * as spl from '@solana/spl-token';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import * as web3 from '@solana/web3.js';
 
-import idl from '../idl.json';
-
-// 固定値
-const PAYER = Keypair.generate();
-// const MINT_AUTHORITY = Keypair.generate();
-// const FREEZE_AUTHORITY = Keypair.generate();
+// import idl from '../idl.json';
 
 export const SolanaContext = createContext({
-  airdrop: async () => {},
-  createSplToken: async () => {},
+  // airdrop: async () => {},
+  mintNFT: async () => {},
   testFunc: () => {},
 });
 
@@ -43,53 +17,78 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   const wallet = useWallet();
   // const wallet = useAnchorWallet();
 
-  const airdrop = async () => {
-    // const airdropSignature = await connection.requestAirdrop(wallet.publicKey, LAMPORTS_PER_SOL);
-    // await connection.confirmTransaction(airdropSignature);
-    const airdropSignature = await connection.requestAirdrop(PAYER.publicKey, LAMPORTS_PER_SOL);
-    await connection.confirmTransaction(airdropSignature);
-  };
+  // const airdrop = async () => {
+  //   const airdropSignature = await connection.requestAirdrop(
+  //     wallet.publicKey,
+  //     web3.LAMPORTS_PER_SOL
+  //   );
+  //   await connection.confirmTransaction(airdropSignature);
+  // };
 
-  const createSplToken = async () => {
-    const mint = await createMint(connection, PAYER, PAYER.publicKey, PAYER.publicKey, 0);
-    console.log(mint.toBase58());
-    console.log('1');
+  const mintNFT = async () => {
+    if (!wallet.publicKey) {
+      console.log('Please connect a wallet before.');
+      return;
+    }
 
-    // Mint情報チェック
-    const mintInfo = await getMint(connection, mint);
-    console.log(mintInfo);
-
-    // トークン保有用アカウント
-    const associatedTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      PAYER,
-      mint,
+    // Generate/Get keys
+    const mint = web3.Keypair.generate();
+    const associatedTokenAccount = await spl.getAssociatedTokenAddress(
+      mint.publicKey,
       wallet.publicKey
     );
-    console.log('2');
 
-    // ミント
-    await mintTo(connection, PAYER, mint, associatedTokenAccount.address, PAYER, 1);
-    console.log('3');
-
-    // ミント禁止
-    const transaction = new Transaction().add(
-      createSetAuthorityInstruction(mint, PAYER.publicKey, AuthorityType.MintTokens, null)
+    // Transaction for creating NFT
+    const transaction = new web3.Transaction().add(
+      // create mint account
+      web3.SystemProgram.createAccount({
+        fromPubkey: wallet.publicKey,
+        newAccountPubkey: mint.publicKey,
+        space: spl.MINT_SIZE,
+        lamports: await spl.getMinimumBalanceForRentExemptMint(connection),
+        programId: spl.TOKEN_PROGRAM_ID,
+      }),
+      // init mint account
+      spl.createInitializeMintInstruction(
+        mint.publicKey, // mint pubkey
+        0, // decimals
+        wallet.publicKey, // mint authority
+        wallet.publicKey // freeze authority
+      ),
+      // create associated-token-account
+      spl.createAssociatedTokenAccountInstruction(
+        wallet.publicKey, // payer
+        associatedTokenAccount, // ata
+        wallet.publicKey, // owner
+        mint.publicKey // mint
+      ),
+      // mint to
+      spl.createMintToInstruction(
+        mint.publicKey, // mint
+        associatedTokenAccount, // receiver
+        wallet.publicKey, // mint authority
+        1 // amount
+      ),
+      // disable additional mint
+      spl.createSetAuthorityInstruction(
+        mint.publicKey, // mint
+        wallet.publicKey, // Current authority
+        spl.AuthorityType.MintTokens, // Type of authority
+        null // New authority
+      )
     );
-    await sendAndConfirmTransaction(connection, transaction, [PAYER]);
-    console.log('4');
+
+    // Transaction実行
+    const signature = await wallet.sendTransaction(transaction, connection, { signers: [mint] });
+    await connection.confirmTransaction(signature, 'processed');
   };
 
-  const testFunc = async () => {
-    await airdrop();
-    await createSplToken();
-  };
+  const testFunc = () => {};
 
   return (
     <SolanaContext.Provider
       value={{
-        airdrop,
-        createSplToken,
+        mintNFT,
         testFunc,
       }}
     >
