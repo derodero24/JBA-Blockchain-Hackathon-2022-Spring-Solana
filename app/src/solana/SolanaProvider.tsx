@@ -230,7 +230,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         console.log('Number of own Tansu NFT:', newOwnTansuNfts.length);
         console.log('Number of others Tansu NFT:', newOthersTansuNfts.length);
         setOwnTansuNfts(newOwnTansuNfts);
-        setOwnTansuNfts(newOthersTansuNfts);
+        setOthersTansuNfts(newOthersTansuNfts);
       }
     );
   };
