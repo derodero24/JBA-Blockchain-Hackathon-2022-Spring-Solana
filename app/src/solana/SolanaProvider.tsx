@@ -96,7 +96,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     return mint.publicKey;
   };
 
-  const getNftOwner = (mintPubkey: web3.PublicKey): Promise<string> => {
+  const getNftOwner = (mintPubkey: web3.PublicKey): Promise<web3.PublicKey> => {
     // mintアドレスから所有者アドレスを特定
     return connection
       .getTokenLargestAccounts(mintPubkey)
@@ -108,9 +108,10 @@ export default function SolanaProvider(props: { children: ReactNode }) {
       .then(res => {
         console.log('getParsedAccountInfo() >', res);
         const data = res.value.data as web3.ParsedAccountData;
-        const Base58OwnerAddress = data.parsed.info.owner as string;
-        console.log('Base58OwnerAddress:', Base58OwnerAddress);
-        return Base58OwnerAddress;
+        const Base58OwnerPubkey = data.parsed.info.owner as string;
+        const decodedOwnerPubkey = anchor.utils.bytes.bs58.decode(Base58OwnerPubkey);
+        const ownerPubkey = new web3.PublicKey(decodedOwnerPubkey);
+        return ownerPubkey;
       });
   };
 
@@ -182,17 +183,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   };
 
   const testFunc = () => {
-    createTansuNft([], 100);
-    // const keypair = web3.Keypair.generate();
-    // const base58key = keypair.publicKey.toBase58();
-    // console.log(keypair.publicKey);
-    // console.log(base58key);
-    // const bytes = bs58.decode(base58key);
-    // console.log(JSON.stringify(Array.from(bytes)));
-    // // const newPubkey = web3.PublicKey.decode(Buffer.from(base58key));
-    // const newPubkey = web3.PublicKey.decode(Buffer.from(bytes));
-    // console.log(newPubkey);
-    // console.log(newPubkey.toBase58());
+    // createTansuNft([], 100);
   };
 
   return (
