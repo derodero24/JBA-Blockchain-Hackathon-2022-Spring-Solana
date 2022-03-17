@@ -6,7 +6,7 @@ import { ConfirmOptions, Connection, Keypair, PublicKey, SystemProgram } from '@
 import nft1_img from '../img/test1.png';
 import nft2_img from '../img/test2.png';
 import nft3_img from '../img/test3.png';
-import idl from './idl.json';
+import idl from './solana/idl.json';
 
 const baseAccount = Keypair.generate(); // アカウント
 const programID = new PublicKey(idl.metadata.address); // プログラムID

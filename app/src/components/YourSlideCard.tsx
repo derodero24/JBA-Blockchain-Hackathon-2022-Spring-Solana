@@ -2,10 +2,10 @@ import { useContext } from 'react';
 
 import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/material';
 
-import { SolanaContext } from './SolanaProvider';
+import { SolanaContext } from '../solana/SolanaProvider';
 
 export default function YourSlideCard(props) {
-  const { mintNFT } = useContext(SolanaContext);
+  const { createTansuNft } = useContext(SolanaContext);
 
   return (
     <Card sx={{ maxWidth: '25%', alignContents: 'center', justifyContents: 'center' }}>
@@ -36,7 +36,7 @@ export default function YourSlideCard(props) {
               '&:hover': { background: 'steelblue' },
             }}
             variant='contained'
-            onClick={mintNFT}
+            onClick={() => createTansuNft([], 100)}
             fullWidth
           >
             MINT

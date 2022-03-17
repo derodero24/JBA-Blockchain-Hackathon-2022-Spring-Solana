@@ -7,7 +7,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 
 import App from './App';
-import SolanaProvider from './components/SolanaProvider';
+import SolanaProvider from './solana/SolanaProvider';
 
 // const network = 'http://127.0.0.1:8899'; // localhost
 const network = clusterApiUrl('devnet'); // devnet/testnet/mainnet-beta

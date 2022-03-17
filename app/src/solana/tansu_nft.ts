@@ -1,0 +1,1 @@
+../../../target/types/tansu_nft.ts

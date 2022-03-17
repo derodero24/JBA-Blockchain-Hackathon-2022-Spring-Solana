@@ -5,7 +5,7 @@ import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 import { readSlide } from '../interact';
-import { SolanaContext } from './SolanaProvider';
+import { SolanaContext } from '../solana/SolanaProvider';
 
 export default function SlideMarketCard(props) {
   const wallet = useAnchorWallet();
