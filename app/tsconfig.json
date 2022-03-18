@@ -9,6 +9,11 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@solana/spl-token": [
+        "./node_modules/@solana/spl-token/lib/types/index.d.ts"
+      ]
+    }
   }
 }

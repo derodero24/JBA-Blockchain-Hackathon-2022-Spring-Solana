@@ -2,17 +2,15 @@ import * as React from 'react';
 
 import { Paper, Typography } from '@mui/material';
 
-import { getYourNFTs } from '../interact';
-
 export function YourMaterialsPage() {
-  const [yourNFTList, setYourNFTList] = React.useState([]);
+  const [yourNFTList, _setYourNFTList] = React.useState([]);
   React.useEffect(() => {
     getMaterials();
   });
 
   const getMaterials = async () => {
-    const tmp = await getYourNFTs();
-    setYourNFTList(tmp);
+    // const tmp = await getYourNFTs();
+    // setYourNFTList(tmp);
   };
 
   return (

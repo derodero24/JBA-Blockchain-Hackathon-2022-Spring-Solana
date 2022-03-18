@@ -4,7 +4,6 @@ import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/mat
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-import { readSlide } from '../interact';
 import { SolanaContext } from '../solana/SolanaProvider';
 
 export default function SlideMarketCard(props) {
@@ -12,7 +11,7 @@ export default function SlideMarketCard(props) {
   const { testFunc } = useContext(SolanaContext);
 
   const read = async () => {
-    const _tmp = await readSlide();
+    // const _tmp = await readSlide();
   };
 
   const test = async () => {

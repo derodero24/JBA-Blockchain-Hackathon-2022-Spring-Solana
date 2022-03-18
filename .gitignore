@@ -1,8 +1,10 @@
+.DS_Store
+node_modules
+package-lock.json
 
 .anchor
-.DS_Store
+test-ledger
 **/*.rs.bk
-node_modules
 
 /target/*
 !/target/deploy

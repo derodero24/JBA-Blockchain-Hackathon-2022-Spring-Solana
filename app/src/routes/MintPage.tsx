@@ -3,16 +3,16 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 
 import MintCard from '../components/MintCard';
-import { getMaterialMarket } from '../interact';
 
 export function MintPage() {
-  const [materialMarket, setMaterialMarket] = React.useState([]);
+  const [materialMarket, _setMaterialMarket] = React.useState([]);
   React.useEffect(() => {
     getMaterialMarketTmp();
   });
+
   const getMaterialMarketTmp = async () => {
-    const tmp = await getMaterialMarket();
-    setMaterialMarket(tmp);
+    // const tmp = await getMaterialMarket();
+    // setMaterialMarket(tmp);
   };
 
   return (

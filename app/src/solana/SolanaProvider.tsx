@@ -1,5 +1,7 @@
-import { createContext, ReactNode, useEffect, useState } from 'react';
+import axios, { AxiosResponse } from 'axios';
+import { createContext, ReactNode, useState } from 'react';
 
+import * as mpl from '@metaplex/js';
 import * as anchor from '@project-serum/anchor';
 import * as spl from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
@@ -32,6 +34,16 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   // Tansu NFT一覧
   const [ownTansuNfts, setOwnTansuNfts] = useState<TansuNftAccount[]>([]);
   const [othersTansuNfts, setOthersTansuNfts] = useState<TansuNftAccount[]>([]);
+
+  const lookup = async (url: string): Promise<mpl.MetadataJson> => {
+    // et metadata json
+    try {
+      const { data } = await axios.get<string, AxiosResponse<mpl.MetadataJson>>(url);
+      return data;
+    } catch {
+      throw new Error(`unable to get metadata json from url ${url}`);
+    }
+  };
 
   const generatePubkeyFromBs58 = (base58Pubkey: string): web3.PublicKey => {
     // base58形式文字列からPublickeyインスタンスを作成
@@ -83,14 +95,15 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         associatedTokenAddress, // receiver
         wallet.publicKey, // mint authority
         1 // amount
-      ),
-      // disable additional mint
-      spl.createSetAuthorityInstruction(
-        mint.publicKey, // mint
-        wallet.publicKey, // Current authority
-        spl.AuthorityType.MintTokens, // Type of authority
-        null // New authority
       )
+      // disable additional mint
+      // TODO: Metaplexメタデータアップロード後に実施
+      // spl.createSetAuthorityInstruction(
+      //   mint.publicKey, // mint
+      //   wallet.publicKey, // Current authority
+      //   spl.AuthorityType.MintTokens, // Type of authority
+      //   null // New authority
+      // )
     );
 
     // Transaction実行
@@ -101,7 +114,48 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     await connection.confirmTransaction(signature, 'processed');
     console.log('successfully mint NFT');
 
+    // --------create metadata-----------
+    const uri = 'https://gateway.pinata.cloud/ipfs/QmNQh8noRHn7e7zt9oYNfGWuxHgKWkNPducMZs1SiZaYw4';
+
+    const {
+      name,
+      symbol,
+      seller_fee_basis_points,
+      properties: { creators },
+    } = await lookup(uri);
+
+    const metadataDataProps = new mpl.programs.metadata.MetadataDataData({
+      name,
+      symbol,
+      uri,
+      sellerFeeBasisPoints: seller_fee_basis_points,
+      creators: null,
+    });
+
+    const { txId, metadata } = await createMetadataNFT(
+      mint.publicKey,
+      metadataDataProps,
+      wallet.publicKey
+    );
+
     return mint.publicKey;
+  };
+
+  const createMetadataNFT = async (
+    editionMint: web3.PublicKey,
+    metadataData: any,
+    updateAuthority: web3.PublicKey
+  ) => {
+    const txId = await mpl.actions.createMetadata({
+      connection,
+      wallet,
+      editionMint,
+      metadataData,
+      updateAuthority,
+    });
+    const metadata = await mpl.programs.metadata.Metadata.getPDA(editionMint);
+    console.log('Created Metadata:', txId, metadata.toBase58());
+    return { txId, metadata };
   };
 
   const getNftOwner = (mintPubkey: web3.PublicKey): Promise<web3.PublicKey> => {

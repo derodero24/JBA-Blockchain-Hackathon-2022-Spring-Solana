@@ -1,0 +1,43 @@
+{
+  "name": "Hibee #0004",
+  "symbol": "HB",
+  "description": "Green hex",
+  "seller_fee_basis_points": 500,
+  "image": "https://ipfs.io/ipfs/QmeAP2RBjug2aVLHhk99nKJDxa7RPyBFG4mf59VmUoyZ5h",
+  "external_url": "",
+  "edition": "2022",
+  "attributes": [
+    {
+      "trait_type": "Color",
+      "value": "Green"
+    },
+    {
+      "trait_type": "Shape",
+      "value": "Hex"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "generation",
+      "value": 4
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://ipfs.io/ipfs/QmeAP2RBjug2aVLHhk99nKJDxa7RPyBFG4mf59VmUoyZ5h",
+        "type": "image/png"
+      }
+    ],
+    "creators": [
+      {
+        "address": "75ErM1QcGjHiPMX7oLsf9meQdGSUs4ZrwS2X8tBpsZhA",
+        "share": 65
+      },
+      {
+        "address": "aury7LJUae7a92PBo35vVbP61GX8VbyxFKausvUtBrt",
+        "share": 35
+      }
+    ]
+  }
+}
