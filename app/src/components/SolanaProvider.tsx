@@ -1,10 +1,13 @@
 import { createContext, ReactNode } from 'react';
 
+import * as mpl from '@metaplex/js';
 import * as spl from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import * as web3 from '@solana/web3.js';
+import axios, { AxiosResponse } from 'axios';
 
 // import idl from '../idl.json';
+
 
 export const SolanaContext = createContext({
   // airdrop: async () => {},
@@ -24,6 +27,18 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   //   );
   //   await connection.confirmTransaction(airdropSignature);
   // };
+
+
+  // get metadata json
+  const lookup = async (url: string): Promise<mpl.MetadataJson> => {
+    try {
+      const { data } = await axios.get<string, AxiosResponse<mpl.MetadataJson>>(url);
+  
+      return data;
+    } catch {
+      throw new Error(`unable to get metadata json from url ${url}`);
+    }
+  };
 
   const mintNFT = async () => {
     if (!wallet.publicKey) {
@@ -74,14 +89,66 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         mint.publicKey, // mint
         wallet.publicKey, // Current authority
         spl.AuthorityType.MintTokens, // Type of authority
-        null // New authority
+        wallet.publicKey // New authority
       )
     );
 
     // Transaction実行
     const signature = await wallet.sendTransaction(transaction, connection, { signers: [mint] });
     await connection.confirmTransaction(signature, 'processed');
+
+
+    // --------create metadata-----------
+
+    const uri = "https://gateway.pinata.cloud/ipfs/QmNQh8noRHn7e7zt9oYNfGWuxHgKWkNPducMZs1SiZaYw4";
+
+    const {
+      name,
+      symbol,
+      seller_fee_basis_points,
+      properties: { creators },
+    } = await lookup(uri);
+
+    /*
+    const creatorsData = creators.reduce<mpl.programs.metadata.Creator[]>((memo, { address, share }) => {
+      const verified = address === wallet.publicKey.toString();
+  
+      const creator = new mpl.programs.metadata.Creator({
+        address,
+        share,
+        verified,
+      });
+  
+      memo = [...memo, creator];
+  
+      return memo;
+    }, []);
+    */
+
+    const metadataDataProps = new mpl.programs.metadata.MetadataDataData({
+      name,
+      symbol,
+      uri,
+      sellerFeeBasisPoints: seller_fee_basis_points,
+      creators: null
+    });
+
+    const {txId, metadata} = await createMetadataNFT(mint.publicKey, metadataDataProps, wallet.publicKey);
+
   };
+
+  const createMetadataNFT = async(editionMint:web3.PublicKey, metadataData:any, updateAuthority:web3.PublicKey)=>{
+    const txId = await mpl.actions.createMetadata({
+        connection,
+        wallet,
+        editionMint,
+        metadataData,
+        updateAuthority,
+    });
+    const metadata = await mpl.programs.metadata.Metadata.getPDA(editionMint);
+    console.log('Created Metadata:', txId, metadata.toBase58());
+    return { txId, metadata };
+}
 
   const testFunc = () => {};
 

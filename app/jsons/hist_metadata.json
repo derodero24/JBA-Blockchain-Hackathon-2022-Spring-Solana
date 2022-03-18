@@ -1,0 +1,39 @@
+{
+  "name": "Hist #00023",
+  "symbol": "IST",
+  "description": "history page 23",
+  "seller_fee_basis_points": 500,
+  "image": "https://ipfs.io/ipfs/QmQdQUqRqbm5hHexhuBa26pw5wAYkzf2rL76si6WM7Eo28",
+  "external_url": "",
+  "edition": "2022",
+  "attributes": [
+    {
+      "trait_type": "Page",
+      "value": "23"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "generation",
+      "value": 23
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://ipfs.io/ipfs/QmQdQUqRqbm5hHexhuBa26pw5wAYkzf2rL76si6WM7Eo28",
+        "type": "image/png"
+      }
+    ],
+    "creators": [
+      {
+        "address": "75ErM1QcGjHiPMX7oLsf9meQdGSUs4ZrwS2X8tBpsZhA",
+        "share": 65
+      },
+      {
+        "address": "aury7LJUae7a92PBo35vVbP61GX8VbyxFKausvUtBrt",
+        "share": 35
+      }
+    ]
+  }
+}
