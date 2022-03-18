@@ -36,7 +36,7 @@ export default function YourSlideCard(props) {
               '&:hover': { background: 'steelblue' },
             }}
             variant='contained'
-            onClick={() => createTansuNft([], 100)}
+            onClick={() => createTansuNft([], 100, '')}
             fullWidth
           >
             MINT

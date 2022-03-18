@@ -4,13 +4,7 @@ import { ReactNode, SyntheticEvent, useState } from 'react';
 
 import { AppBar, Box, Tab, Tabs, Typography } from '@mui/material';
 
-import {
-  MintPage,
-  PresentationPage,
-  SlideMarketPage,
-  YourMaterialsPage,
-  YourSlidePage,
-} from './routes';
+import { MaterialMarketPage, PresentationPage, SlideMarketPage, YourSlidePage } from './routes';
 
 interface TabPanelProps {
   children?: ReactNode;
@@ -46,7 +40,7 @@ function a11yProps(index: number) {
 }
 
 export default function App() {
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(1);
 
   const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -65,10 +59,9 @@ export default function App() {
             aria-label='basic tabs example'
           >
             <Tab label='Slide' {...a11yProps(0)} />
-            <Tab label='Your Materials' {...a11yProps(1)} />
-            <Tab label='Material Market' {...a11yProps(2)} />
-            <Tab label='Your Slide' {...a11yProps(3)} />
-            <Tab label='Slide Market' {...a11yProps(4)} />
+            <Tab label='Material Market' {...a11yProps(1)} />
+            <Tab label='Your Slide' {...a11yProps(2)} />
+            <Tab label='Slide Market' {...a11yProps(3)} />
           </Tabs>
         </Box>
       </AppBar>
@@ -76,15 +69,12 @@ export default function App() {
         <PresentationPage />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <YourMaterialsPage />
+        <MaterialMarketPage />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <MintPage />
-      </TabPanel>
-      <TabPanel value={value} index={3}>
         <YourSlidePage />
       </TabPanel>
-      <TabPanel value={value} index={4}>
+      <TabPanel value={value} index={3}>
         <SlideMarketPage />
       </TabPanel>
     </Box>

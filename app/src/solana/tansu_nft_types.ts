@@ -19,6 +19,7 @@ export type Shareholder = {
 export type TansuNftAccount = {
   owner: web3.PublicKey;
   publicKey: web3.PublicKey;
+  totalFee: number;
   tansu: TansuMeta;
   metaplex: MetaplexMeta;
   shareholders: Shareholder[];
