@@ -222,7 +222,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
 
   const createTansuNft = (
     innerTokenPubkeys: web3.PublicKey[],
-    originalsReadFee: number
+    useFee: number
   ): Promise<TansuNftAccount | null> => {
     // Tansu NFTの作成
     const tansuNftAccount = defaultTansuNftAccount;
@@ -233,9 +233,9 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         tansuNftAccount.tansu = {
           originalToken: mintPubkey,
           innerTokens: innerTokenPubkeys,
-          originalsReadFee: originalsReadFee,
+          useFee: useFee,
         };
-        return initializeTansuAccount(mintPubkey, innerTokenPubkeys, originalsReadFee);
+        return initializeTansuAccount(mintPubkey, innerTokenPubkeys, useFee);
       })
       .then(tansuPubkey => {
         console.log('initializeTansuAccount(): ✓');
@@ -284,7 +284,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
             tansu: {
               originalToken: tansu.account.originalToken,
               innerTokens: tansu.account.innerTokens,
-              originalsReadFee: tansu.account.originalsReedFee,
+              useFee: tansu.account.useFee,
             },
           };
           if (ownNftBase58Pubkeys.includes(tansu.account.originalToken.toBase58())) {
@@ -313,7 +313,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     let shareholders = [
       {
         owner: await getNftOwner(mintPubkey),
-        originalsReadFee: tansuAccount.account.originalsReedFee,
+        useFee: tansuAccount.account.useFee,
       },
     ];
 

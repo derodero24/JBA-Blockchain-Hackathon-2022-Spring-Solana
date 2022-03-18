@@ -61,7 +61,7 @@ describe('tansu-nft', () => {
     const tansuAccount = await program.account.tansu.fetch(args.tansu.publicKey);
     assert.equal(tansuAccount.originalToken.toBase58(), args.original_token.toBase58());
     assert.equal(tansuAccount.innerTokens.length, args.inner_tokens.length);
-    assert.equal(tansuAccount.originalsReedFee, args.originals_reed_fee);
+    assert.equal(tansuAccount.useFee, args.originals_reed_fee);
   });
 
   it('Initialize second tansu account.', async () => {
@@ -80,7 +80,7 @@ describe('tansu-nft', () => {
     const tansuAccount = await program.account.tansu.fetch(args.tansu.publicKey);
     assert.equal(tansuAccount.originalToken.toBase58(), args.original_token.toBase58());
     assert.equal(tansuAccount.innerTokens.length, args.inner_tokens.length);
-    assert.equal(tansuAccount.originalsReedFee, args.originals_reed_fee);
+    assert.equal(tansuAccount.useFee, args.originals_reed_fee);
   });
 
   it('Can fetch all tansu accounts', async () => {

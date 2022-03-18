@@ -10,12 +10,12 @@ pub mod tansu_nft {
         ctx: Context<Initialize>,
         original_token: Pubkey,
         inner_tokens: Vec<Pubkey>,
-        originals_reed_fee: f64,
+        use_fee: f64,
     ) -> Result<()> {
         let tansu = &mut ctx.accounts.tansu;
         tansu.original_token = original_token;
         tansu.inner_tokens = inner_tokens;
-        tansu.originals_reed_fee = originals_reed_fee;
+        tansu.use_fee = use_fee;
         Ok(())
     }
 }
@@ -33,7 +33,7 @@ pub struct Initialize<'info> {
 pub struct Tansu {
     pub original_token: Pubkey,
     pub inner_tokens: Vec<Pubkey>,
-    pub originals_reed_fee: f64,
+    pub use_fee: f64,
 }
 impl Tansu {
     const LEN: usize = 8 // discriminator

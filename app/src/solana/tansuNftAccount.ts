@@ -5,7 +5,7 @@ export type TansuNftAccount = {
   tansu: {
     originalToken: web3.PublicKey;
     innerTokens: web3.PublicKey[];
-    originalsReadFee: number;
+    useFee: number;
   };
 };
 
@@ -14,6 +14,6 @@ export const defaultTansuNftAccount: TansuNftAccount = {
   tansu: {
     originalToken: null,
     innerTokens: null,
-    originalsReadFee: null,
+    useFee: null,
   },
 };
