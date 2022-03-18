@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState } from 'react';
+import { createContext, ReactNode, useEffect, useState } from 'react';
 
 import * as anchor from '@project-serum/anchor';
 import * as spl from '@solana/spl-token';
@@ -7,13 +7,14 @@ import * as web3 from '@solana/web3.js';
 
 import idl from '../solana/idl.json';
 import { TansuNft } from './tansu_nft';
+import { defaultTansuNftAccount, TansuNftAccount } from './tansuNftAccount';
 
 export const SolanaContext = createContext({
-  createTansuNft: async (_a: web3.PublicKey[], _b: number) => true,
+  createTansuNft: async (_a: web3.PublicKey[], _b: number) => null,
   refreshTansuNftData: async () => {},
   testFunc: () => {},
-  ownTansuNfts: [] as web3.PublicKey[],
-  othersTansuNfts: [] as web3.PublicKey[],
+  ownTansuNfts: [] as TansuNftAccount[],
+  othersTansuNfts: [] as TansuNftAccount[],
 });
 
 export default function SolanaProvider(props: { children: ReactNode }) {
@@ -29,8 +30,8 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   ) as anchor.Program<TansuNft>;
 
   // Tansu NFT一覧
-  const [ownTansuNfts, setOwnTansuNfts] = useState<web3.PublicKey[]>([]);
-  const [othersTansuNfts, setOthersTansuNfts] = useState<web3.PublicKey[]>([]);
+  const [ownTansuNfts, setOwnTansuNfts] = useState<TansuNftAccount[]>([]);
+  const [othersTansuNfts, setOthersTansuNfts] = useState<TansuNftAccount[]>([]);
 
   const generatePubkeyFromBs58 = (base58Pubkey: string): web3.PublicKey => {
     // base58形式文字列からPublickeyインスタンスを作成
@@ -117,13 +118,17 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         const data = res.value.data as web3.ParsedAccountData;
         const Base58OwnerPubkey = data.parsed.info.owner as string;
         return generatePubkeyFromBs58(Base58OwnerPubkey);
+      })
+      .catch(e => {
+        console.log('Error:', e);
+        return null;
       });
   };
 
   const initializeTansuAccount = (
     mintPubkey: web3.PublicKey,
     innerTokenPubkeys: web3.PublicKey[],
-    originalsReedFee
+    originalsReedFee: number
   ): Promise<web3.PublicKey> => {
     // Tansuアカウントの初期化
     const tansu = web3.Keypair.generate();
@@ -163,26 +168,30 @@ export default function SolanaProvider(props: { children: ReactNode }) {
 
   const createTansuNft = (
     innerTokenPubkeys: web3.PublicKey[],
-    originalsReedFee: number
-  ): Promise<boolean> => {
+    originalsReadFee: number
+  ): Promise<TansuNftAccount | null> => {
     // Tansu NFTの作成
+    const tansuNftAccount = defaultTansuNftAccount;
+
     return mintNft()
       .then(mintPubkey => {
         console.log('mintNFT(): ✓');
-        return initializeTansuAccount(mintPubkey, innerTokenPubkeys, originalsReedFee);
+        tansuNftAccount.tansu = {
+          originalToken: mintPubkey,
+          innerTokens: innerTokenPubkeys,
+          originalsReadFee: originalsReadFee,
+        };
+        return initializeTansuAccount(mintPubkey, innerTokenPubkeys, originalsReadFee);
       })
       .then(tansuPubkey => {
         console.log('initializeTansuAccount(): ✓');
-        return fetchTansuAccount(tansuPubkey);
-      })
-      .then(tansuAccount => {
-        console.log('fetchTansu(): ✓');
-        console.log('tansuAccount:', tansuAccount);
-        return true;
+        tansuNftAccount.publicKey = tansuPubkey;
+        setOwnTansuNfts(prev => [...prev, tansuNftAccount]);
+        return tansuNftAccount;
       })
       .catch(e => {
         console.log('Error:', e);
-        return false;
+        return null;
       });
   };
 
@@ -211,18 +220,25 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     // 両方のPromiseが完了した後の処理
     await Promise.all([allTansuAccountsPromise, ownNftBase58PubkeysPromise]).then(
       ([allTansuAccounts, ownNftBase58Pubkeys]) => {
-        const newOwnTansuNfts: web3.PublicKey[] = [];
-        const newOthersTansuNfts: web3.PublicKey[] = [];
+        const newOwnTansuNfts: TansuNftAccount[] = [];
+        const newOthersTansuNfts: TansuNftAccount[] = [];
 
         // Tansu NFTの振り分け
         for (const tansu of allTansuAccounts) {
-          const tansuOriginalTokenPubkey = tansu.account.originalToken;
-          if (ownNftBase58Pubkeys.includes(tansuOriginalTokenPubkey.toBase58())) {
+          const tansuNftAccount: TansuNftAccount = {
+            publicKey: tansu.publicKey,
+            tansu: {
+              originalToken: tansu.account.originalToken,
+              innerTokens: tansu.account.innerTokens,
+              originalsReadFee: tansu.account.originalsReedFee,
+            },
+          };
+          if (ownNftBase58Pubkeys.includes(tansu.account.originalToken.toBase58())) {
             // 自分の所有するTansu NFTの場合
-            newOwnTansuNfts.push(tansuOriginalTokenPubkey);
+            newOwnTansuNfts.push(tansuNftAccount);
           } else {
             // 他人の所有するTansu NFTの場合
-            newOthersTansuNfts.push(tansuOriginalTokenPubkey);
+            newOthersTansuNfts.push(tansuNftAccount);
           }
         }
 
@@ -235,10 +251,37 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     );
   };
 
+  const fetchAllShareholders = async (mintPubkey: web3.PublicKey) => {
+    // 全権利者を取得
+    const tansuAccount = (await fetchAllTansuAccounts(mintPubkey))[0];
+    if (!tansuAccount) return [];
+
+    let shareholders = [
+      {
+        owner: await getNftOwner(mintPubkey),
+        originalsReadFee: tansuAccount.account.originalsReedFee,
+      },
+    ];
+
+    // Kimono NFTのオーナー情報を追加
+    for (const innerTokenPubkey of tansuAccount.account.innerTokens) {
+      shareholders = shareholders.concat(await fetchAllShareholders(innerTokenPubkey));
+    }
+    return shareholders;
+  };
+
+  const createDemoEnv = async () => {
+    // デモ用にTansu NFTを用意する
+    const tansuNftAccount1 = await createTansuNft([], 1);
+    const tansuNftAccount2 = await createTansuNft([tansuNftAccount1.tansu.originalToken], 10);
+    await createTansuNft([tansuNftAccount2.tansu.originalToken], 100);
+    await refreshTansuNftData();
+  };
+
   const testFunc = async () => {
     await refreshTansuNftData();
-    // createTansuNft([], 100);
-    // createTansuNftsForTest();
+    const shareholders = await fetchAllShareholders(ownTansuNfts[0].tansu.originalToken);
+    console.log('shareholders:', shareholders);
   };
 
   return (
