@@ -7,7 +7,7 @@ import * as spl from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import * as web3 from '@solana/web3.js';
 
-import idl from '../solana/idl.json';
+import idl from './idl.json';
 import { TansuNft } from './tansu_nft';
 import { defaultTansuNftAccount, TansuNftAccount } from './tansuNftAccount';
 
@@ -139,6 +139,15 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     );
 
     return mint.publicKey;
+  };
+
+  const fetchTokenMetadata = async (mintPubkey: web3.PublicKey) => {
+    const pda = await mpl.programs.metadata.Metadata.getPDA(mintPubkey);
+    const onchainData = (await mpl.programs.metadata.Metadata.load(connection, pda)).data;
+    const offchainData = (await axios.get(onchainData.data.uri)).data;
+    console.log('onchain data:', onchainData);
+    console.log('offchain data:', offchainData);
+    return { onchainData, offchainData };
   };
 
   const createMetadataNFT = async (
@@ -334,8 +343,11 @@ export default function SolanaProvider(props: { children: ReactNode }) {
 
   const testFunc = async () => {
     await refreshTansuNftData();
-    const shareholders = await fetchAllShareholders(ownTansuNfts[0].tansu.originalToken);
-    console.log('shareholders:', shareholders);
+    // const shareholders = await fetchAllShareholders(ownTansuNfts[0].tansu.originalToken);
+    // console.log('shareholders:', shareholders);
+    // await fetchTokenMetadata(
+    //   generatePubkeyFromBs58('DC4ydm8ey5UB79Jwm8pfDUYqHd33q86N6a1gzy3mdgDi')
+    // );
   };
 
   return (
