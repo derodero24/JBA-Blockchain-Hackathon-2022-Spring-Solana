@@ -4,19 +4,15 @@ import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/mat
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
-import { readSlide } from '../interact';
 import { SolanaContext } from '../solana/SolanaProvider';
 
 export default function SlideMarketCard(props) {
   const wallet = useAnchorWallet();
-  const { testFunc } = useContext(SolanaContext);
+  const { sendFeeToShareholders } = useContext(SolanaContext);
 
   const read = async () => {
-    const _tmp = await readSlide();
-  };
-
-  const test = async () => {
-    await testFunc();
+    console.log(wallet);
+    await sendFeeToShareholders(props.shareholders);
   };
 
   if (!wallet) {
@@ -67,20 +63,6 @@ export default function SlideMarketCard(props) {
             </Grid>
           </CardContent>
         </Card>
-        <Button
-          sx={{
-            mt: 1,
-            padding: 2,
-            margin: 2,
-            backgroundColor: '#ff8c00',
-            '&:hover': { background: 'steelblue' },
-          }}
-          variant='contained'
-          onClick={test}
-          fullWidth
-        >
-          TEST
-        </Button>
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import { createContext, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import _ from 'lodash';
+import { createContext, ReactNode, useCallback, useMemo } from 'react';
 
 import * as mpl from '@metaplex/js';
 import * as anchor from '@project-serum/anchor';
@@ -29,11 +30,14 @@ const defaultTansuNftAccount: TansuNftAccount = {
 
 export const SolanaContext = createContext({
   createTansuNft: async (_a: web3.PublicKey[], _b: number, _c: string) => null,
-  refreshTansuNftData: async () => {},
+  refreshTansuNftData: async () => ({
+    materialTansuNfts: [] as TansuNftAccount[],
+    slideTansuNfts: [] as TansuNftAccount[],
+  }),
+  sendFeeToShareholders: async (_: Shareholder[]) => {},
   testFunc: () => {},
   wallet: null as WalletContextState,
-  materialTansuNfts: [] as TansuNftAccount[],
-  slideTansuNfts: [] as TansuNftAccount[],
+  // getTansuNfts: () => [] as TansuNftAccount[][],
 });
 
 export default function SolanaProvider(props: { children: ReactNode }) {
@@ -48,10 +52,6 @@ export default function SolanaProvider(props: { children: ReactNode }) {
       ) as anchor.Program<TansuNft>,
     [connection, wallet]
   );
-
-  // Tansu NFT一覧
-  const [materialTansuNfts, setMaterialTansuNfts] = useState<TansuNftAccount[]>([]);
-  const [slideTansuNfts, setSlideTansuNfts] = useState<TansuNftAccount[]>([]);
 
   const lookup = async (url: string): Promise<mpl.MetadataJson> => {
     // et metadata json
@@ -189,12 +189,12 @@ export default function SolanaProvider(props: { children: ReactNode }) {
       return connection
         .getTokenLargestAccounts(mintPubkey)
         .then(res => {
-          console.log('getTokenLargestAccounts() >', res);
+          // console.log('getTokenLargestAccounts() >', res);
           const tokenAccount = res.value[0].address;
           return connection.getParsedAccountInfo(tokenAccount);
         })
         .then(res => {
-          console.log('getParsedAccountInfo() >', res);
+          // console.log('getParsedAccountInfo() >', res);
           const data = res.value.data as web3.ParsedAccountData;
           const Base58OwnerPubkey = data.parsed.info.owner as string;
           return generatePubkeyFromBs58(Base58OwnerPubkey);
@@ -272,7 +272,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
       .then(tansuPubkey => {
         console.log('initializeTansuAccount(): ✓');
         tansuNftAccount.publicKey = tansuPubkey;
-        setSlideTansuNfts(prev => [...prev, tansuNftAccount]);
+        // setSlideTansuNfts(prev => [...prev, tansuNftAccount]);
         return tansuNftAccount;
       })
       .catch(e => {
@@ -305,10 +305,9 @@ export default function SolanaProvider(props: { children: ReactNode }) {
 
   const refreshTansuNftData = useCallback(async () => {
     // Tansu NFTリストを更新
-
-    await fetchAllTansuAccounts().then(async allTansuAccounts => {
-      const newMaterialTansuNfts: TansuNftAccount[] = [];
-      const newSlideTansuNfts: TansuNftAccount[] = [];
+    return fetchAllTansuAccounts().then(async allTansuAccounts => {
+      const materialTansuNfts: TansuNftAccount[] = [];
+      const slideTansuNfts: TansuNftAccount[] = [];
 
       // Tansu NFTの振り分け
       for (const tansu of allTansuAccounts) {
@@ -333,15 +332,20 @@ export default function SolanaProvider(props: { children: ReactNode }) {
           shareholders: shareholders,
         };
 
-        newMaterialTansuNfts.push(tansuNftAccount);
+        if (offchainData.attributes[0]?.value === 'Slide') {
+          slideTansuNfts.push(tansuNftAccount);
+        } else {
+          materialTansuNfts.push(tansuNftAccount);
+        }
       }
 
       // State更新
-      console.log('material Tansu NFT:', newMaterialTansuNfts);
-      console.log('Number of material Tansu NFT:', newMaterialTansuNfts.length);
-      console.log('Number of slide Tansu NFT:', newSlideTansuNfts.length);
-      setMaterialTansuNfts(newMaterialTansuNfts);
-      setSlideTansuNfts(newSlideTansuNfts);
+      // console.log('material Tansu NFT:', materialTansuNfts);
+      // console.log('Number of material Tansu NFT:', materialTansuNfts.length);
+      // console.log('Number of slide Tansu NFT:', slideTansuNfts.length);
+      // setMaterialTansuNfts(newMaterialTansuNfts);
+      // setSlideTansuNfts(newSlideTansuNfts);
+      return _.cloneDeep({ materialTansuNfts, slideTansuNfts });
     });
   }, [fetchAllTansuAccounts, getNftOwner, fetchTokenMetadata, fetchAllShareholders]);
 
@@ -384,8 +388,10 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     // デモ用にTansu NFTを用意する
     await clearAllTansuAccounts();
     const metadataUri = 'https://ipfs.io/ipfs/QmeBqrKS8AcZesRhxw2PKAXG9jAuWo37h8ZCr7hJLCNe95';
-    await createTansuNft([], 0.01, metadataUri);
-    await refreshTansuNftData();
+    const tansuNftAccount1 = await createTansuNft([], 0.01, metadataUri);
+    const metadataUri2 = 'https://ipfs.io/ipfs/Qmd683M7U7chTFkESuaZwBDGyLAsgxxGtRATfJstetmdnn';
+    await createTansuNft([tansuNftAccount1.tansu.originalToken], 0.1, metadataUri2);
+    // await refreshTansuNftData();
 
     // const tansuNftAccount1 = await createTansuNft([], 1);
     // const tansuNftAccount2 = await createTansuNft([tansuNftAccount1.tansu.originalToken], 10);
@@ -394,32 +400,20 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   };
 
   const testFunc = async () => {
-    await createDemoEnv();
-    // await refreshTansuNftData();
-    // const shareholders = await fetchAllShareholders(ownTansuNfts[0].tansu.originalToken);
-    // console.log('shareholders:', shareholders);
-    // // await fetchTokenMetadata(
-    // //   generatePubkeyFromBs58('DC4ydm8ey5UB79Jwm8pfDUYqHd33q86N6a1gzy3mdgDi')
-    // // );
-    // sendFeeToShareholders(shareholders);
+    // await createDemoEnv();
+    const { materialTansuNfts, slideTansuNfts } = await refreshTansuNftData();
+    console.log('materialTansuNfts:', materialTansuNfts);
+    console.log('slideTansuNfts:', slideTansuNfts);
   };
-
-  useEffect(() => {
-    // Walletが接続されたタイミングでTansuNFTリスト更新
-    if (wallet) refreshTansuNftData();
-  }, []);
-
-  console.log('あああああああああああああああああ');
 
   return (
     <SolanaContext.Provider
       value={{
         createTansuNft,
         refreshTansuNftData,
+        sendFeeToShareholders,
         testFunc,
         wallet,
-        materialTansuNfts,
-        slideTansuNfts,
       }}
     >
       {props.children}
