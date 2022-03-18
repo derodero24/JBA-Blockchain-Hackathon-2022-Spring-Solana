@@ -387,20 +387,23 @@ export default function SolanaProvider(props: { children: ReactNode }) {
   const createDemoEnv = async () => {
     // デモ用にTansu NFTを用意する
     await clearAllTansuAccounts();
-    const metadataUri = 'https://ipfs.io/ipfs/QmeBqrKS8AcZesRhxw2PKAXG9jAuWo37h8ZCr7hJLCNe95';
-    const tansuNftAccount1 = await createTansuNft([], 0.01, metadataUri);
-    const metadataUri2 = 'https://ipfs.io/ipfs/Qmd683M7U7chTFkESuaZwBDGyLAsgxxGtRATfJstetmdnn';
-    await createTansuNft([tansuNftAccount1.tansu.originalToken], 0.1, metadataUri2);
-    // await refreshTansuNftData();
-
-    // const tansuNftAccount1 = await createTansuNft([], 1);
-    // const tansuNftAccount2 = await createTansuNft([tansuNftAccount1.tansu.originalToken], 10);
-    // await createTansuNft([tansuNftAccount2.tansu.originalToken], 100);
-    // await refreshTansuNftData();
+    // 素材NFT
+    let metadataUri = 'https://ipfs.io/ipfs/QmdUmbf7PahvwQxGNm7fcNUV5AkBDkgmL13hvLuX3DBzKh';
+    const material1 = await createTansuNft([], 0.5, metadataUri); // dush
+    metadataUri = 'https://ipfs.io/ipfs/Qmd52KkZzKEVD11w6aM6nJZc81bZnnBGiaeRqWtBA65fKu';
+    const material2 = await createTansuNft([], 1, metadataUri); // hibee
+    metadataUri = 'https://ipfs.io/ipfs/QmR9MTw2rtjuyZmPdTFnA2i2Pj25xxRnYpbUrsYeXVCHgu';
+    const material3 = await createTansuNft([material2.tansu.originalToken], 2, metadataUri); // hist
+    // metadataUri = 'https://ipfs.io/ipfs/Qmd683M7U7chTFkESuaZwBDGyLAsgxxGtRATfJstetmdnn';
+    // await createTansuNft(
+    //   [material1.tansu.originalToken, material2.tansu.originalToken, material3.tansu.originalToken],
+    //   3,
+    //   metadataUri
+    // ); // Slide
   };
 
   const testFunc = async () => {
-    // await createDemoEnv();
+    await createDemoEnv();
     const { materialTansuNfts, slideTansuNfts } = await refreshTansuNftData();
     console.log('materialTansuNfts:', materialTansuNfts);
     console.log('slideTansuNfts:', slideTansuNfts);
