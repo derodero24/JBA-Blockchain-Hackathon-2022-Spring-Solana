@@ -43,8 +43,11 @@ export default function SlideMarketCard(props) {
             image={props.img_url}
           />
           <CardContent sx={{ flex: 'auto' }}>
-            <Typography component='div' variant='h4'>
+            <Typography component='div' variant='h5'>
               {props.name}
+            </Typography>
+            <Typography component='div' variant='h6'>
+              Read Total Fee : {props.totalFee} SOL
             </Typography>
             <Grid container alignItems='center' justifyContent='center' item xs={12}>
               <Button
