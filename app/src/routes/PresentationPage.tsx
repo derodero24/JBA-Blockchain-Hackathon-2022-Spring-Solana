@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import { AddCircleOutline, RemoveCircleOutline, Edit, ExpandMore, ExpandLess} from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -14,20 +14,16 @@ import {
   TextField,
 } from '@mui/material';
 
-import nft1_img from '../../img/test1.png';
-import nft2_img from '../../img/test2.png';
-import nft3_img from '../../img/test3.png';
 import Slide from '../components/Slide';
 
 const slidesProp = [
-  {},
-  { title: 'First Slide', img: nft1_img, msg: 'I can do anything ' },
-  { title: 'Second Slide', img: nft2_img, msg: 'I can do anything ' },
-  { title: 'Third Slide', img: nft3_img, msg: 'I can do anything ' },
+  { title: 'First Slide', img: "https://ipfs.io/ipfs/QmaYSTTQQLQZJTFdQAHPggKALuk7WYcu3zSYDazVZBgWs1", msg: 'We are gonna make' },
+  { title: 'Second Slide', img: "https://ipfs.io/ipfs/QmeAP2RBjug2aVLHhk99nKJDxa7RPyBFG4mf59VmUoyZ5h", msg: 'We are gonna make' },
+  { title: 'Third Slide', img: "https://ipfs.io/ipfs/QmQdQUqRqbm5hHexhuBa26pw5wAYkzf2rL76si6WM7Eo28", msg: 'We are gonna make' },
 ];
 
-function Editor() {
-  const [slidePages, setSlidePages] = useState([1, 2, 3]);
+
+function EditorRow(props){
   const [title, setTitle] = useState('');
   const [imgId, setImgId] = useState();
   const [body, setBody] = useState();
@@ -44,27 +40,22 @@ function Editor() {
     setImgId(e.target.value);
   };
 
-  const addSlide = () => {
-    const t = slidePages.slice();
-    t.push(t.length + 1);
-    setSlidePages(t);
-  };
-
-  const deleteSlide = () => {
-    const t = slidePages.slice();
-    t.pop();
-    setSlidePages(t);
-  };
+  const editSlide = (slideId) =>{
+    const slideProp = {
+      slideId:String(slideId),
+      title:title,
+      imgId:imgId,
+      body:body
+    }
+    localStorage.setItem('Slide' + String(slideId), JSON.stringify(slideProp));
+  }
 
   return (
     <div>
-      {slidePages.map(key => {
-        return (
-          <div key={key}>
             <Paper>
               <Grid container>
                 <Grid item xs={1}>
-                  Slide #{key}
+                  Slide # {props.id}
                 </Grid>
                 <Grid item xs={2}>
                   <TextField
@@ -89,13 +80,13 @@ function Editor() {
                       label='Img'
                       onChange={handleChangeImg}
                     >
-                      <MenuItem value={10}>Ten</MenuItem>
-                      <MenuItem value={20}>Twenty</MenuItem>
-                      <MenuItem value={30}>Thirty</MenuItem>
+                      <MenuItem value={1}>Ten</MenuItem>
+                      <MenuItem value={2}>Twenty</MenuItem>
+                      <MenuItem value={3}>Thirty</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={7}>
+                <Grid item xs={6}>
                   <TextField
                     type='text'
                     name='Body'
@@ -108,44 +99,111 @@ function Editor() {
                     autoComplete='off'
                   />
                 </Grid>
+                <Grid item xs={1}>
+                  <Button onClick={()=>{editSlide(props.id)}}><Edit/></Button>
+                </Grid>
               </Grid>
             </Paper>
           </div>
         );
-      })}
-      <Button
-        onClick={() => {
-          addSlide();
-        }}
-      >
-        <AddCircleOutline />
-      </Button>
-      <Button
-        onClick={() => {
-          deleteSlide();
-        }}
-      >
-        <RemoveCircleOutline />
-      </Button>
-    </div>
-  );
+}
+
+function Editor() {
+  const [slidePages, setSlidePages] = useState([1, 2, 3]);
+  const [editorFlag, setEditorFlag] = useState(1);
+
+
+  const addSlide = () => {
+    const t = slidePages.slice();
+    t.push(t.length + 1);
+    setSlidePages(t);
+  };
+
+  const deleteSlide = () => {
+    const t = slidePages.slice();
+    t.pop();
+    setSlidePages(t);
+  };
+
+
+  const showEditor=()=>{
+    setEditorFlag(editorFlag*(-1));
+  }
+
+  if(editorFlag==1){
+    return(
+      <div>
+        <Button onClick={()=>{showEditor()}} type="button" fullWidth><ExpandMore sx={{fontSize: 40}}/></Button>
+        </div>
+      );
+
+  }else{
+      return(
+        <div>
+        <Button onClick={()=>{showEditor()}} type="button" fullWidth><ExpandLess sx={{fontSize: 40}}/></Button>
+            {slidePages.map(key => {
+              return(
+                <div key={key}>
+                  <EditorRow id={key}/>
+                </div>
+              )
+            })}
+            <Button
+              onClick={() => {
+                addSlide();
+              }}
+            >
+              <AddCircleOutline />
+            </Button>
+            <Button
+              onClick={() => {
+                deleteSlide();
+              }}
+            >
+              <RemoveCircleOutline />
+            </Button>
+          </div>
+        );
+  }
 }
 
 export function PresentationPage() {
-  const pageNum = slidesProp.length - 1;
+  const [pageNum, setPageNum] = useState(slidesProp.length);
   const [page, setPage] = useState(1);
   const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
   const [yourSlides, _setYourSlides] = useState(slidesProp);
 
+  useEffect(()=>{
+    //getSlideProp();
+  },[]);
+
+  const getSlideProp =()=>{
+    const tmp = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const keyName = localStorage.key(i);
+      if (keyName.indexOf("Slide") !== -1){
+        tmp.push(localStorage.getItem(keyName));
+      }
+    }
+    if(tmp.length==0){
+      //_setYourSlides([{ title: 'First Slide', imgId:1, body: 'I can do anything ' }])
+      setPageNum(1);
+    }else{
+      _setYourSlides(tmp);
+      setPageNum(tmp.length);
+    }
+    console.log(yourSlides[page-1].title);
+  }
+
   return (
     <div>
       <Box margin={5}>
         <Slide
-          title={yourSlides[page].title}
-          img_url={yourSlides[page].img}
-          msg={yourSlides[page].msg}
+          title={yourSlides[page-1].title}
+          img_url={yourSlides[page-1].img}
+          msg={yourSlides[page-1].msg}
         />
       </Box>
 
@@ -154,7 +212,9 @@ export function PresentationPage() {
           <Pagination count={pageNum} page={page} onChange={handleChange} />
         </Box>
       </Grid>
-      <Editor />
+      <Box margin={5}>
+        <Editor />
+      </Box>
     </div>
   );
 }

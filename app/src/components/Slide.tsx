@@ -1,110 +1,13 @@
 import * as React from 'react';
 
 import { Box, Grid, Paper, Typography } from '@mui/material';
+import axios, { AxiosResponse } from 'axios';
 
 function Slide(props) {
-  const [demandDesire, setDemandDesire] = React.useState('');
-  const [submitDesireFlag, setSubmitDesireFlag] = React.useState(1);
   const [colors, setColors] = React.useState([
     Math.random().toString(16).slice(-6),
     Math.random().toString(16).slice(-6),
   ]);
-
-  const generateDesire = id => {
-    if (id == 0) {
-      const NFT1 = JSON.parse(localStorage.getItem('NFT1'));
-      if (NFT1.first_slot.length == 0) {
-        localStorage.setItem(
-          'NFT1',
-          JSON.stringify({
-            id: NFT1.id,
-            img: NFT1.img,
-            name: NFT1.name,
-            first_slot: demandDesire,
-            second_slot: NFT1.second_slot,
-            third_slot: NFT1.third_slot,
-          })
-        );
-      } else if (NFT1.second_slot.length == 0) {
-        localStorage.setItem(
-          'NFT1',
-          JSON.stringify({
-            id: NFT1.id,
-            img: NFT1.img,
-            name: NFT1.name,
-            first_slot: NFT1.first_slot,
-            second_slot: demandDesire,
-            third_slot: NFT1.third_slot,
-          })
-        );
-      } else if (NFT1.third_slot.length == 0) {
-        localStorage.setItem(
-          'NFT1',
-          JSON.stringify({
-            id: NFT1.id,
-            img: NFT1.img,
-            name: NFT1.name,
-            first_slot: NFT1.first_slot,
-            second_slot: NFT1.second_slot,
-            third_slot: demandDesire,
-          })
-        );
-      } else {
-        console.log('full slot already');
-      }
-    } else if (id == 1) {
-      const NFT2 = JSON.parse(localStorage.getItem('NFT2'));
-      if (NFT2.first_slot.length == 0) {
-        localStorage.setItem(
-          'NFT2',
-          JSON.stringify({
-            id: NFT2.id,
-            img: NFT2.img,
-            name: NFT2.name,
-            first_slot: demandDesire,
-            second_slot: NFT2.second_slot,
-            third_slot: NFT2.third_slot,
-          })
-        );
-      } else if (NFT2.second_slot.length == 0) {
-        localStorage.setItem(
-          'NFT2',
-          JSON.stringify({
-            id: NFT2.id,
-            img: NFT2.img,
-            name: NFT2.name,
-            first_slot: NFT2.first_slot,
-            second_slot: demandDesire,
-            third_slot: NFT2.third_slot,
-          })
-        );
-      } else if (NFT2.third_slot.length == 0) {
-        localStorage.setItem(
-          'NFT2',
-          JSON.stringify({
-            id: NFT2.id,
-            img: NFT2.img,
-            name: NFT2.name,
-            first_slot: NFT2.first_slot,
-            second_slot: NFT2.second_slot,
-            third_slot: demandDesire,
-          })
-        );
-      } else {
-        console.log('full slot already');
-      }
-    }
-
-    //setYourNFTs([JSON.parse(localStorage.getItem("NFT1")), JSON.parse(localStorage.getItem("NFT2"))]);
-  };
-
-  const handleChangeDesireForm = e => {
-    setDemandDesire(e.target.value);
-  };
-
-  const makeDesire = () => {
-    setSubmitDesireFlag(submitDesireFlag * -1);
-  };
 
   return (
     <div>
@@ -128,7 +31,7 @@ function Slide(props) {
                   <Box
                     sx={{
                       mt: 3,
-                      ml: 10,
+                      ml: 20,
                       mb: 10,
                       width: 400,
                       height: 400,
@@ -143,13 +46,14 @@ function Slide(props) {
                   <Box
                     sx={{
                       margin: 10,
+                      mt:20,
                       justifyContent: 'center',
                       textAlign: 'center',
-                      width: 400,
+                      width: 500,
                       height: 300,
                     }}
                   >
-                    <Typography variant='h4' color='text.secondary' component='div'>
+                    <Typography variant='h3' color='text.secondary' component='div'>
                       {props.msg}
                     </Typography>
                   </Box>
