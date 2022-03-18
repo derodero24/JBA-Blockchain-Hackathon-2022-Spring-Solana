@@ -9,7 +9,21 @@ import * as web3 from '@solana/web3.js';
 
 import idl from './idl.json';
 import { TansuNft } from './tansu_nft';
-import { defaultTansuNftAccount, TansuNftAccount } from './tansuNftAccount';
+import { Shareholder, TansuNftAccount } from './tansu_nft_types';
+
+const defaultTansuNftAccount: TansuNftAccount = {
+  publicKey: null,
+  tansu: {
+    originalToken: null,
+    innerTokens: null,
+    useFee: null,
+  },
+  metaplex: {
+    name: '',
+    imageUri: '',
+  },
+  shareholders: [],
+};
 
 export const SolanaContext = createContext({
   createTansuNft: async (_a: web3.PublicKey[], _b: number) => null,
@@ -289,6 +303,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         // Tansu NFTの振り分け
         for (const tansu of allTansuAccounts) {
           const tansuNftAccount: TansuNftAccount = {
+            ...defaultTansuNftAccount,
             publicKey: tansu.publicKey,
             tansu: {
               originalToken: tansu.account.originalToken,
@@ -314,15 +329,15 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     );
   };
 
-  const fetchAllShareholders = async (mintPubkey: web3.PublicKey) => {
+  const fetchAllShareholders = async (mintPubkey: web3.PublicKey): Promise<Shareholder[]> => {
     // 全権利者を取得
     const tansuAccount = (await fetchAllTansuAccounts(mintPubkey))[0];
     if (!tansuAccount) return [];
 
-    let shareholders = [
+    let shareholders: Shareholder[] = [
       {
-        owner: await getNftOwner(mintPubkey),
-        useFee: tansuAccount.account.useFee,
+        publicKey: await getNftOwner(mintPubkey),
+        fee: tansuAccount.account.useFee,
       },
     ];
 
@@ -341,13 +356,34 @@ export default function SolanaProvider(props: { children: ReactNode }) {
     await refreshTansuNftData();
   };
 
+  const sendFeeToShareholders = async (shareholders: Shareholder[]) => {
+    // Transaction作成
+    const transaction = new web3.Transaction();
+    for (const shareholder of shareholders) {
+      transaction.add(
+        web3.SystemProgram.transfer({
+          fromPubkey: wallet.publicKey,
+          toPubkey: shareholder.publicKey,
+          lamports: shareholder.fee * web3.LAMPORTS_PER_SOL,
+        })
+      );
+    }
+
+    // Transaction実行
+    console.log('Sending use fee...');
+    const signature = await wallet.sendTransaction(transaction, connection);
+    await connection.confirmTransaction(signature, 'processed');
+    console.log('Successfully send use fee!');
+  };
+
   const testFunc = async () => {
     await refreshTansuNftData();
-    // const shareholders = await fetchAllShareholders(ownTansuNfts[0].tansu.originalToken);
-    // console.log('shareholders:', shareholders);
+    const shareholders = await fetchAllShareholders(ownTansuNfts[0].tansu.originalToken);
+    console.log('shareholders:', shareholders);
     // await fetchTokenMetadata(
     //   generatePubkeyFromBs58('DC4ydm8ey5UB79Jwm8pfDUYqHd33q86N6a1gzy3mdgDi')
     // );
+    sendFeeToShareholders(shareholders);
   };
 
   return (
