@@ -100,6 +100,31 @@ describe('tansu-nft', () => {
     assert.equal(tansuAccounts.length, 1);
   });
 
+  it('Can delete own tansu', async () => {
+    const args = tansuArgs[0];
+    await program.rpc.delete({
+      accounts: {
+        tansu: args.tansu.publicKey,
+        cleaner: args.creator.publicKey,
+      },
+    });
+    // Ensure fetching the tweet account returns null.
+    const tansuAccount = await program.account.tansu.fetchNullable(args.tansu.publicKey);
+    assert.ok(tansuAccount === null);
+  });
+
+  it('Can delete others tansu', async () => {
+    await program.rpc.delete({
+      accounts: {
+        tansu: tansuArgs[1].tansu.publicKey,
+        cleaner: tansuArgs[0].creator.publicKey,
+      },
+    });
+    // Ensure fetching the tweet account returns null.
+    const tansuAccount = await program.account.tansu.fetchNullable(tansuArgs[1].tansu.publicKey);
+    assert.ok(tansuAccount === null);
+  });
+
   // it('create new tansu', async () => {
   //   // Tansu,creatorのキーペア
   //   const newCreator = program.provider.wallet;

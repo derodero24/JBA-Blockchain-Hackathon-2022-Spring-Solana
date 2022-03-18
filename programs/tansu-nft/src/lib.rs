@@ -18,6 +18,10 @@ pub mod tansu_nft {
         tansu.use_fee = use_fee;
         Ok(())
     }
+
+    pub fn delete(_ctx: Context<Delete>) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -27,6 +31,13 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Delete<'info> {
+    #[account(mut, close = cleaner)]
+    pub tansu: Account<'info, Tansu>,
+    pub cleaner: Signer<'info>,
 }
 
 #[account]

@@ -37,6 +37,22 @@
           "type": "f64"
         }
       ]
+    },
+    {
+      "name": "delete",
+      "accounts": [
+        {
+          "name": "tansu",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "cleaner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
