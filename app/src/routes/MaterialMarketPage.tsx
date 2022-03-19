@@ -1,9 +1,6 @@
-import '@solana/wallet-adapter-react-ui/styles.css';
-
 import { useContext, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
-import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 import MintCard from '../components/MintCard';
@@ -11,8 +8,7 @@ import { SolanaContext } from '../solana/SolanaProvider';
 import { TansuNftAccount } from '../solana/tansu_nft_types';
 
 export function MaterialMarketPage() {
-  const wallet = useAnchorWallet();
-  const { refreshTansuNftData } = useContext(SolanaContext);
+  const { anchorWallet, refreshTansuNftData } = useContext(SolanaContext);
   const [dummys, setDummys] = useState<TansuNftAccount[]>([]);
 
   useEffect(() => {
@@ -23,7 +19,7 @@ export function MaterialMarketPage() {
 
   return (
     <>
-      {wallet ? (
+      {anchorWallet ? (
         <Box
           sx={{
             flexDirection: 'row',

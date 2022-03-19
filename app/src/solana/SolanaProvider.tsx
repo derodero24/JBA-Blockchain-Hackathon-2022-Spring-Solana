@@ -5,7 +5,13 @@ import { createContext, ReactNode, useCallback, useMemo } from 'react';
 import * as mpl from '@metaplex/js';
 import * as anchor from '@project-serum/anchor';
 import * as spl from '@solana/spl-token';
-import { useConnection, useWallet, WalletContextState } from '@solana/wallet-adapter-react';
+import {
+  AnchorWallet,
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+  WalletContextState,
+} from '@solana/wallet-adapter-react';
 import * as web3 from '@solana/web3.js';
 
 import idl from './idl.json';
@@ -38,12 +44,14 @@ export const SolanaContext = createContext({
   generatePubkeyFromBs58: (_: string) => new web3.PublicKey(_),
   testFunc: () => {},
   wallet: null as WalletContextState,
+  anchorWallet: null as AnchorWallet,
   // getTansuNfts: () => [] as TansuNftAccount[][],
 });
 
 export default function SolanaProvider(props: { children: ReactNode }) {
   const { connection } = useConnection();
   const wallet = useWallet();
+  const anchorWallet = useAnchorWallet();
   const program = useMemo(
     () =>
       new anchor.Program(
@@ -419,6 +427,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         generatePubkeyFromBs58,
         testFunc,
         wallet,
+        anchorWallet,
       }}
     >
       {props.children}

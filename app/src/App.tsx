@@ -1,5 +1,3 @@
-import '@solana/wallet-adapter-react-ui/styles.css';
-
 import { ReactNode, SyntheticEvent, useState } from 'react';
 
 import { AppBar, Box, Tab, Tabs, Typography } from '@mui/material';
