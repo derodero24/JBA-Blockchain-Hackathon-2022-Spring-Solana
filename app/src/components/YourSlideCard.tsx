@@ -5,7 +5,8 @@ import { Button, Card, CardContent, CardMedia, Grid, Typography } from '@mui/mat
 import { SolanaContext } from '../solana/SolanaProvider';
 
 export default function YourSlideCard(props) {
-  const { createTansuNft } = useContext(SolanaContext);
+  const { createTansuNft, generatePubkeyFromBs58 } = useContext(SolanaContext);
+  const metadataUri = 'https://ipfs.io/ipfs/Qmd683M7U7chTFkESuaZwBDGyLAsgxxGtRATfJstetmdnn';
 
   return (
     <Card sx={{ maxWidth: '25%', alignContents: 'center', justifyContents: 'center' }}>
@@ -36,7 +37,17 @@ export default function YourSlideCard(props) {
               '&:hover': { background: 'steelblue' },
             }}
             variant='contained'
-            onClick={() => createTansuNft([], 100, '')}
+            onClick={() =>
+              createTansuNft(
+                [
+                  generatePubkeyFromBs58('27MNCxmGVZ1xhidZ2WwNoaJRUZ2TMXiAybYAjrwZbtWo'),
+                  generatePubkeyFromBs58('6cYG5PVCYuVWLoxgX1Gp5dukP48RoHHPAvr3sB851EQ2'),
+                  generatePubkeyFromBs58('CZHnYBAFyRubiktfR8XbLx91o3CpuDNetSXU1F9NfRxy'),
+                ],
+                3,
+                metadataUri
+              )
+            }
             fullWidth
           >
             MINT

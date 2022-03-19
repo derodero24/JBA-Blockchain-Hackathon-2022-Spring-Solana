@@ -35,6 +35,7 @@ export const SolanaContext = createContext({
     slideTansuNfts: [] as TansuNftAccount[],
   }),
   sendFeeToShareholders: async (_: Shareholder[]) => {},
+  generatePubkeyFromBs58: (_: string) => new web3.PublicKey(_),
   testFunc: () => {},
   wallet: null as WalletContextState,
   // getTansuNfts: () => [] as TansuNftAccount[][],
@@ -415,6 +416,7 @@ export default function SolanaProvider(props: { children: ReactNode }) {
         createTansuNft,
         refreshTansuNftData,
         sendFeeToShareholders,
+        generatePubkeyFromBs58,
         testFunc,
         wallet,
       }}
