@@ -59,7 +59,7 @@ export default function App() {
             <Tab label='Slide' {...a11yProps(0)} />
             <Tab label='Material Market' {...a11yProps(1)} />
             <Tab label='Your Slide' {...a11yProps(2)} />
-            <Tab label='Slide Market' {...a11yProps(3)} />
+            <Tab label='Slide Reader' {...a11yProps(3)} />
           </Tabs>
         </Box>
       </AppBar>

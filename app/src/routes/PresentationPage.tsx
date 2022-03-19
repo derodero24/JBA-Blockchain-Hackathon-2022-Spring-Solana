@@ -1,12 +1,7 @@
-import { useEffect, useState } from 'react';
+import _ from 'lodash';
+import { ChangeEvent, useState } from 'react';
 
-import {
-  AddCircleOutline,
-  Edit,
-  ExpandLess,
-  ExpandMore,
-  RemoveCircleOutline,
-} from '@mui/icons-material';
+import { AddCircleOutline, ExpandLess, ExpandMore, RemoveCircleOutline } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -17,54 +12,47 @@ import {
   Pagination,
   Paper,
   Select,
+  SelectChangeEvent,
   TextField,
 } from '@mui/material';
 
 import Slide from '../components/Slide';
 
-const slidesProp = [
-  {
-    title: 'First Slide',
-    img: 'https://ipfs.io/ipfs/QmaYSTTQQLQZJTFdQAHPggKALuk7WYcu3zSYDazVZBgWs1',
-    msg: 'We are gonna make',
-  },
-  {
-    title: 'Second Slide',
-    img: 'https://ipfs.io/ipfs/QmeAP2RBjug2aVLHhk99nKJDxa7RPyBFG4mf59VmUoyZ5h',
-    msg: 'We are gonna make',
-  },
-  {
-    title: 'Third Slide',
-    img: 'https://ipfs.io/ipfs/QmQdQUqRqbm5hHexhuBa26pw5wAYkzf2rL76si6WM7Eo28',
-    msg: 'We are gonna make',
-  },
-];
+type SlideProp = {
+  title: string;
+  img: string;
+  msg: string;
+};
 
-function EditorRow(props) {
-  const [title, setTitle] = useState('');
-  const [imgId, setImgId] = useState();
-  const [body, setBody] = useState();
+function EditorRow(props: {
+  idx: number;
+  slideProps: SlideProp[];
+  setSlidesProps: React.Dispatch<React.SetStateAction<SlideProp[]>>;
+}) {
+  const slideProp = props.slideProps[props.idx];
 
-  const handleChangeTitle = e => {
-    setTitle(e.target.value);
+  const handleChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
+    props.setSlidesProps(prev => {
+      const newVal = _.cloneDeep(prev);
+      newVal[props.idx].title = e.target.value;
+      return newVal;
+    });
   };
 
-  const handleChangeBody = e => {
-    setBody(e.target.value);
+  const handleChangeBody = (e: ChangeEvent<HTMLInputElement>) => {
+    props.setSlidesProps(prev => {
+      const newVal = _.cloneDeep(prev);
+      newVal[props.idx].msg = e.target.value;
+      return newVal;
+    });
   };
 
-  const handleChangeImg = e => {
-    setImgId(e.target.value);
-  };
-
-  const editSlide = slideId => {
-    const slideProp = {
-      slideId: String(slideId),
-      title: title,
-      imgId: imgId,
-      body: body,
-    };
-    localStorage.setItem('Slide' + String(slideId), JSON.stringify(slideProp));
+  const handleChangeImg = (e: SelectChangeEvent<string>) => {
+    props.setSlidesProps(prev => {
+      const newVal = _.cloneDeep(prev);
+      newVal[props.idx].img = e.target.value;
+      return newVal;
+    });
   };
 
   return (
@@ -72,13 +60,13 @@ function EditorRow(props) {
       <Paper>
         <Grid container>
           <Grid item xs={1}>
-            Slide # {props.id}
+            Slide # {props.idx}
           </Grid>
           <Grid item xs={2}>
             <TextField
               type='text'
               name='Title'
-              value={title}
+              value={slideProp.title}
               onChange={handleChangeTitle}
               label='Title'
               placeholder='WAGMI'
@@ -92,14 +80,25 @@ function EditorRow(props) {
               <InputLabel id='demo-simple-select-label'>Img</InputLabel>
               <Select
                 labelId='demo-simple-select-label'
-                id='demo-simple-select'
-                value={imgId}
+                value={slideProp.img}
                 label='Img'
                 onChange={handleChangeImg}
               >
-                <MenuItem value={1}>Ten</MenuItem>
-                <MenuItem value={2}>Twenty</MenuItem>
-                <MenuItem value={3}>Thirty</MenuItem>
+                <MenuItem
+                  value={'https://ipfs.io/ipfs/QmaYSTTQQLQZJTFdQAHPggKALuk7WYcu3zSYDazVZBgWs1'}
+                >
+                  Dush #0001
+                </MenuItem>
+                <MenuItem
+                  value={'https://ipfs.io/ipfs/QmeAP2RBjug2aVLHhk99nKJDxa7RPyBFG4mf59VmUoyZ5h'}
+                >
+                  Hibee #0004
+                </MenuItem>
+                <MenuItem
+                  value={'https://ipfs.io/ipfs/QmQdQUqRqbm5hHexhuBa26pw5wAYkzf2rL76si6WM7Eo28'}
+                >
+                  Hist #00023
+                </MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -107,7 +106,7 @@ function EditorRow(props) {
             <TextField
               type='text'
               name='Body'
-              value={body}
+              value={slideProp.msg}
               onChange={handleChangeBody}
               label='Body'
               placeholder='You can do it'
@@ -116,56 +115,45 @@ function EditorRow(props) {
               autoComplete='off'
             />
           </Grid>
-          <Grid item xs={1}>
-            <Button
-              onClick={() => {
-                editSlide(props.id);
-              }}
-            >
-              <Edit />
-            </Button>
-          </Grid>
         </Grid>
       </Paper>
     </div>
   );
 }
 
-function Editor() {
-  const [slidePages, setSlidePages] = useState([1, 2, 3]);
-  const [editorFlag, setEditorFlag] = useState(1);
+function Editor(props: {
+  slideProps: SlideProp[];
+  setSlidesProps: React.Dispatch<React.SetStateAction<SlideProp[]>>;
+}) {
+  const [editorFlag, setEditorFlag] = useState(false);
 
   const addSlide = () => {
-    const t = slidePages.slice();
-    t.push(t.length + 1);
-    setSlidePages(t);
+    props.setSlidesProps(prev => {
+      const newVal = _.cloneDeep(prev);
+      newVal.push({
+        title: 'First Slide',
+        img: 'https://ipfs.io/ipfs/QmaYSTTQQLQZJTFdQAHPggKALuk7WYcu3zSYDazVZBgWs1',
+        msg: 'We are gonna make',
+      });
+      return newVal;
+    });
   };
 
   const deleteSlide = () => {
-    const t = slidePages.slice();
-    t.pop();
-    setSlidePages(t);
+    props.setSlidesProps(prev => {
+      const newVal = _.cloneDeep(prev);
+      if (newVal.length > 1) {
+        return newVal.slice(0, prev.length - 1);
+      }
+      return newVal;
+    });
   };
 
   const showEditor = () => {
-    setEditorFlag(editorFlag * -1);
+    setEditorFlag(prev => !prev);
   };
 
-  if (editorFlag == 1) {
-    return (
-      <div>
-        <Button
-          onClick={() => {
-            showEditor();
-          }}
-          type='button'
-          fullWidth
-        >
-          <ExpandMore sx={{ fontSize: 40 }} />
-        </Button>
-      </div>
-    );
-  } else {
+  if (editorFlag) {
     return (
       <div>
         <Button
@@ -177,10 +165,14 @@ function Editor() {
         >
           <ExpandLess sx={{ fontSize: 40 }} />
         </Button>
-        {slidePages.map(key => {
+        {props.slideProps.map((_slideProp, idx) => {
           return (
-            <div key={key}>
-              <EditorRow id={key} />
+            <div key={idx}>
+              <EditorRow
+                idx={idx}
+                slideProps={props.slideProps}
+                setSlidesProps={props.setSlidesProps}
+              />
             </div>
           );
         })}
@@ -200,56 +192,54 @@ function Editor() {
         </Button>
       </div>
     );
+  } else {
+    return (
+      <div>
+        <Button
+          onClick={() => {
+            showEditor();
+          }}
+          type='button'
+          fullWidth
+        >
+          <ExpandMore sx={{ fontSize: 40 }} />
+        </Button>
+      </div>
+    );
   }
 }
 
 export function PresentationPage() {
-  const [pageNum, setPageNum] = useState(slidesProp.length);
-  const [page, setPage] = useState(1);
+  const [slidesProps, setSlidesProps] = useState<SlideProp[]>([
+    {
+      title: 'First Slide',
+      img: 'https://ipfs.io/ipfs/QmaYSTTQQLQZJTFdQAHPggKALuk7WYcu3zSYDazVZBgWs1',
+      msg: 'We are gonna make',
+    },
+  ]);
+  const [pageIdx, setPageIdx] = useState(1);
+
   const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
-  const [yourSlides, _setYourSlides] = useState(slidesProp);
-
-  useEffect(() => {
-    //getSlideProp();
-  }, []);
-
-  const getSlideProp = () => {
-    const tmp = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const keyName = localStorage.key(i);
-      if (keyName.indexOf('Slide') !== -1) {
-        tmp.push(localStorage.getItem(keyName));
-      }
-    }
-    if (tmp.length == 0) {
-      //_setYourSlides([{ title: 'First Slide', imgId:1, body: 'I can do anything ' }])
-      setPageNum(1);
-    } else {
-      _setYourSlides(tmp);
-      setPageNum(tmp.length);
-    }
-    console.log(yourSlides[page - 1].title);
+    setPageIdx(value);
   };
 
   return (
     <div>
       <Box margin={5}>
         <Slide
-          title={yourSlides[page - 1].title}
-          img_url={yourSlides[page - 1].img}
-          msg={yourSlides[page - 1].msg}
+          title={slidesProps[pageIdx - 1].title}
+          img_url={slidesProps[pageIdx - 1].img}
+          msg={slidesProps[pageIdx - 1].msg}
         />
       </Box>
 
       <Grid container alignItems='center' justifyContent='center'>
         <Box>
-          <Pagination count={pageNum} page={page} onChange={handleChange} />
+          <Pagination count={slidesProps.length} page={pageIdx} onChange={handleChange} />
         </Box>
       </Grid>
       <Box margin={5}>
-        <Editor />
+        <Editor slideProps={slidesProps} setSlidesProps={setSlidesProps} />
       </Box>
     </div>
   );
