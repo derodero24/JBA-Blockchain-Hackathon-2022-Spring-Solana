@@ -12,7 +12,7 @@ test-ledger
 !/target/idl
 !/target/types
 
-/target/*/*
-!/target/deploy/*.json
-!/target/idl/*.json
-!/target/types/*
+# /target/*/*
+# !/target/deploy/*
+# !/target/idl/*.json
+# !/target/types/*
