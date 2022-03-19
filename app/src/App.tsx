@@ -40,7 +40,7 @@ function a11yProps(index: number) {
 }
 
 export default function App() {
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
 
   const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setValue(newValue);
