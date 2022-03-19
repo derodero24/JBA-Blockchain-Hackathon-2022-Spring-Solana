@@ -37,7 +37,7 @@ export function SlideMarketPage() {
             );
           })}
 
-          <Button
+          {/* <Button
             sx={{
               mt: 1,
               padding: 2,
@@ -50,7 +50,7 @@ export function SlideMarketPage() {
             fullWidth
           >
             TEST
-          </Button>
+          </Button> */}
         </Box>
       ) : (
         <WalletMultiButton />
